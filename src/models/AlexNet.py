@@ -3,13 +3,14 @@
 
 import torch
 import torch.nn as nn
+import pdb
 
 
 class AlexNet(nn.Module):
         def __init__(self, num_classes=1000):
             super().__init__()
             self.features = nn.Sequential(
-                nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
+                nn.Conv2d(1, 64, kernel_size=11, stride=4, padding=2),
                 nn.ReLU(inplace=True),
                 nn.MaxPool2d(kernel_size=3, stride=2),
                 nn.Conv2d(64, 192, kernel_size=5, padding=2),
@@ -25,12 +26,12 @@ class AlexNet(nn.Module):
             )
             self.classifier = nn.Sequential(
                 nn.Dropout(),
-                nn.Linear(256 * 6 * 6, 4096),
+                nn.Linear(256 * 6 * 6, 1024),
                 nn.ReLU(inplace=True),
                 nn.Dropout(),
-                nn.Linear(4096, 4096),
+                nn.Linear(1024, 1024),
                 nn.ReLU(inplace=True),
-                nn.Linear(4096, num_classes),
+                nn.Linear(1024, num_classes),
             )
 
         def forward(self, x):
@@ -38,3 +39,9 @@ class AlexNet(nn.Module):
             x = x.view(x.size(0), 256 * 6 * 6)
             x = self.classifier(x)
             return x
+
+        def predict(self, x):
+            h = self.forward(x)
+            p_yx = nn.functional.softmax(h, dim=1)
+            _, yh = torch.max(p_yx, 1)
+            return yh

@@ -2,8 +2,8 @@
 
 import os
 import numpy as np
-import torch
-from torch.utils.data import Dataset, Dataloader
+from torch.utils.data import Dataset
+import pdb
 
 
 def prepare_data(data_list, num_folds=5, seed=1234):
@@ -24,11 +24,12 @@ def prepare_data(data_list, num_folds=5, seed=1234):
     '''
     np.random.seed(seed)
 
+    files = [l.rstrip('\n') for l in open(data_list)]
+
     def split_folds(N):
         '''
         Split data_list to N folds.
         '''
-        files = [l.rstrip('\n') for l in data_list]
         num_files = len(files)
         num_per_fold = num_files // N
 
@@ -62,15 +63,23 @@ def prepare_data(data_list, num_folds=5, seed=1234):
 
         Returns
         -------
-        train_set, test_set: List[string]
+        train_files, test_files: List[string]
         '''
         train_i = train_idx[i]
         test_i = list(set(tot_idx) - set(train_i))
 
-        train_set = folds[train_i[0]] + folds[train_i[1]] + folds[train_i[2]]
-        test_set = folds[test_i[0]] + folds[test_i[1]] + folds[test_i[2]]
+        train_set = np.concatenate((folds[train_i[0]],
+                                    folds[train_i[1]],
+                                    folds[train_i[2]]),
+                                   axis=0)
+        test_set = np.concatenate((folds[test_i[0]],
+                                   folds[test_i[1]]),
+                                  axis=0)
 
-        return train_set, test_set
+        train_files = np.take(files, train_set, axis=0)
+        test_files = np.take(files, test_set, axis=0)
+
+        return train_files, test_files
 
     return yield_train_test
 
@@ -81,14 +90,14 @@ class SpokenDigits(Dataset):
     '''
     def __init__(self, file_list, root='.'):
         self.root = root
-        self.files = [l.rstrip('\n') for l in open(file_list)]
+        self.files = file_list
         self.num_files = len(self.files)
 
     def __len__(self):
         return self.num_files
 
     def __getitem__(self, i):
-        X = np.load(os.path.join(self.root, self.files[i]))
+        X = np.load(os.path.join(self.root, self.files[i]))[np.newaxis, :]
         attr = self.files[i].split('_')  # e.g. "0_theo_7.npy"
-        Y = float(attr[0])
-        return (X, Y)
+        Y = int(attr[0])  # torch.LongTensor
+        return X, Y
