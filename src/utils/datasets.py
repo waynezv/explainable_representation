@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+Data utilities for spoken digit dataset.
+'''
 import os
 import numpy as np
 from torch.utils.data import Dataset

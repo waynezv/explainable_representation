@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+'''
+Data processing utilities for spkoken digit dataset.
 
+https://github.com/Jakobovski/free-spoken-digit-dataset
+'''
 import os
 import sys
 import numpy as np
@@ -14,12 +18,12 @@ def pad_signal(sig, pad_length=8000, seed=1234):
 
     Parameters
     ----------
-    sig: numpy.array
+    sig: numpy.array[float]
     pad_length: int
 
     Returns
     -------
-    sig_pad: numpy.array
+    sig_pad: numpy.array[float], shape (pad_length,)
     '''
     np.random.seed(seed)
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-Main program for spoken digit classification.
+Main program for spoken digit classification with
+Neural Gray Level Co-occurrence Matrix projection.
 '''
 import os
 import sys
@@ -11,8 +12,8 @@ import json
 import torch
 import pdb
 
-from models.AlexNet import AlexNet
-from models.trainer import trainer
+from nglcm.nglcm import AlexNet, GLCM
+from nglcm.trainer import trainer
 from utils.datasets import prepare_data, SpokenDigits
 
 # Parse arguments
@@ -80,17 +81,38 @@ for i in range(args['num_runs']):  # num_runs = C(num_folds, 3)
         shuffle=True,
         num_workers=args['num_workers']
         )
-    # TODO: normalize
 
     # Model
     logger.info('Building model')
-    model = AlexNet(num_classes=args['AlexNet']['num_classes'])\
+    model = AlexNet(num_classes=args['AlexNet']['num_classes']) \
+        .to(args['device'])
+
+    # load pretrained model state
+    checkpoint = torch.load(os.path.join(args['saved_model_dir'],
+                                         args['model_to_eval']))
+    pretrained_model_state = checkpoint['model']
+    pretrained_model_state['classifier.0.weight'] = torch.cat(
+        (pretrained_model_state['classifier.0.weight'],
+         torch.zeros_like(
+             pretrained_model_state['classifier.0.weight']).normal_()
+         ), dim=1)
+    model.load_state_dict(pretrained_model_state)
+
+    # freeze model parameters except last layer
+    num_parameters = len(list(model.parameters()))
+    for i, param in enumerate(model.parameters()):
+        if i >= num_parameters - 2:
+            break
+        param.requires_grad = False
+
+    glcm = GLCM(in_dim=args['GLCM']['input_dim'] * args['GLCM']['input_dim'],
+                num_pixel_vals=args['GLCM']['num_pixel_vals']) \
         .to(args['device'])
 
     # Train
     logger.info('Training')
     train_losses, test_losses, train_errors, test_errors = \
-        trainer(train_loader, test_loader, model, args, logger, run_id=i)
+        trainer(train_loader, test_loader, model, glcm, args, logger, run_id=i)
 
     # Log
     logger.info('*' * 50)

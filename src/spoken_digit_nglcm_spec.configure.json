@@ -14,14 +14,18 @@
 
     "_comment": "Model",
     "AlexNet": {
-        "input_dim": 227,
+        "input_dim": 16,
         "num_classes": 10
+    },
+    "GLCM": {
+        "input_dim": 16,
+        "num_pixel_vals": 256
     },
 
     "_comment": "Optimizer",
     "optimizer": {
         "type": "sgd",
-        "lr": 0.001,
+        "lr": 0.00001,
         "lr_decay_mul": 0.5,
         "lr_decay_epochs": 200,
         "momentum": 0.9,
@@ -37,14 +41,14 @@
     "_comment": "Testing",
     "valid_freq": 1,
     "num_folds": 5,
-    "num_runs": 10,
+    "num_runs": 1,
 
     "_comment": "Log",
-    "checkpoint_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/checkpoints",
+    "checkpoint_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/nglcm/checkpoints/run_1113_1600_nglcm",
 
-    "verbose": false,
-    "log_dir": "./model_outputs/logs",
-    "log_file": "run_1027_2330",
+    "verbose": true,
+    "log_dir": "./model_outputs/nglcm/logs",
+    "log_file": "run_1113_1600_nglcm",
 
     "log": {
         "version": 1,
@@ -69,7 +73,7 @@
                 "class": "logging.handlers.RotatingFileHandler",
                 "level": "DEBUG",
                 "formatter": "custom",
-                "filename": "./model_outputs/logs/run_1027_2330",
+                "filename": "./model_outputs/nglcm/logs/run_1113_1600_nglcm",
                 "maxBytes": 10485760,
                 "backupCount": 20,
                 "encoding": "utf8"
@@ -91,6 +95,6 @@
     },
 
     "_comment": "Evaluation",
-    "saved_model_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/checkpoints",
-    "model_to_eval": "checkpoint_epoch_406.pth.tar"
+    "saved_model_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/nglcm/checkpoints/run_1113_1600_alex",
+    "model_to_eval": "checkpoint_epoch_472.pth.tar"
 }

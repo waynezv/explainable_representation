@@ -40,6 +40,7 @@
     "num_runs": 10,
 
     "_comment": "Log",
+    "img_save_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/lrp/outputs/train",
     "checkpoint_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/checkpoints",
 
     "verbose": false,

@@ -59,10 +59,19 @@ print('spectrogram shape: ', spec.shape)
 
 fig.tight_layout()
 # fig.show()
-fig.savefig('sample_plot_jackson_5.jpg')
+# fig.savefig('sample_plot_jackson_5.jpg')
 
-plt.figure(figsize=(8, 8))
+# Test im.get_array
+fig = plt.figure(figsize=(8, 8))
 plt.imshow(im.get_array(), cmap=cmap)
 # plt.show()
-plt.imsave('sample_spec_jackson_5.jpg',
-           im.get_array(), cmap=cmap)
+# plt.imsave('sample_spec_jackson_5.jpg', im.get_array(), cmap=cmap)
+
+# Test gray scale
+fig = plt.figure(figsize=(8, 8))
+img = spec
+img = 255 * (img - img.min()) / (img.max() - img.min())
+img = img.astype('uint8')
+plt.imshow(np.flipud(img), cmap=cmap)
+#  plt.show()
+#  fig.savefig('gray_scale.jpg')
