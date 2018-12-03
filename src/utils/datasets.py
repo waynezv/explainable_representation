@@ -103,3 +103,23 @@ class SpokenDigits(Dataset):
         attr = self.files[i].split('_')  # e.g. "0_theo_7.npy"
         Y = int(attr[0])  # torch.LongTensor
         return X, Y
+
+
+class SpokenDigitsSpecCeps(Dataset):
+    def __init__(self, file_list, root_spec='.', root_ceps='.'):
+        self.root_spec = root_spec
+        self.root_ceps = root_ceps
+        self.files = file_list
+        self.num_files = len(self.files)
+
+    def __len__(self):
+        return self.num_files
+
+    def __getitem__(self, i):
+        spec = np.load(os.path.join(
+            self.root_spec, self.files[i]))[np.newaxis, :].astype('float32')
+        ceps = np.load(os.path.join(
+            self.root_ceps, self.files[i]))[np.newaxis, :].astype('float32')
+        attr = self.files[i].split('_')  # e.g. "0_theo_7.npy"
+        Y = int(attr[0])  # torch.LongTensor
+        return spec, ceps, Y

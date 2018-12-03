@@ -1,0 +1,106 @@
+{
+    "_comment": "General",
+    "random_seed": 1234,
+    "num_workers": 0,
+    "device": "cuda",
+    "device_ids": [0, 1, 2, 3],
+
+    "_comment": "Data",
+    "spectrogram": {
+        "list": "./spectrogram.lst",
+        "path": "../data/free-spoken-digit-dataset/processed/spectrograms",
+        "num_load": null
+    },
+    "cepstra": {
+        "list": "./cepstra_source.lst",
+        "path": "../data/free-spoken-digit-dataset/processed/cepstra_source",
+        "num_load": null
+    },
+
+    "_comment": "Model",
+    "AlexNet": {
+        "input_dim": 227,
+        "num_classes": 10
+    },
+    "FilterNet": {
+        "input_dim": [230, 27]
+    },
+
+    "_comment": "Optimizer",
+    "optimizer": {
+        "type": "sgd",
+        "lr": 0.000001,
+        "lr_decay_mul": 0.5,
+        "lr_decay_epochs": 100,
+        "momentum": 0.9,
+        "nesterov": false,
+        "dampening": 0.9,
+        "weight_decay": 0,
+        "grad_clip": 5
+    },
+
+
+    "_comment": "Training",
+    "batch_size": 100,
+    "num_epochs": 500,
+
+    "_comment": "Testing",
+    "valid_freq": 1,
+    "num_folds": 5,
+    "num_runs": 1,
+
+    "_comment": "Log",
+    "checkpoint_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/nglcm_cepstra_source/checkpoints/run_1119_2300_filter",
+
+    "verbose": true,
+    "log_dir": "./model_outputs/nglcm_cepstra_source/logs",
+    "log_file": "run_1119_2300_filter",
+
+    "log": {
+        "version": 1,
+        "disable_existing_loggers": false,
+
+        "formatters": {
+            "custom": {
+                "format": "%(asctime)s - [%(name)s - %(funcName)-8.8s:%(lineno)-4d] - [%(levelname)-5.5s] - %(message)s",
+                "datefmt": "%Y/%m/%d %H:%M"
+            }
+        },
+
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter": "custom",
+                "stream": "ext://sys.stdout"
+            },
+
+            "file": {
+                "class": "logging.handlers.RotatingFileHandler",
+                "level": "DEBUG",
+                "formatter": "custom",
+                "filename": "./model_outputs/nglcm_cepstra_source/logs/run_1119_2300_filter",
+                "maxBytes": 10485760,
+                "backupCount": 20,
+                "encoding": "utf8"
+            }
+        },
+
+        "loggers": {
+            "main": {
+                "level": "DEBUG",
+                "handlers": ["console", "file"],
+                "propagate": false
+            }
+        },
+
+        "root": {
+            "level": "DEBUG",
+            "handlers": []
+        }
+    },
+
+    "_comment": "Evaluation",
+    "saved_model_dir": "/media/sdd/wzhao/ProJEX/explainable_representation/model_outputs/nglcm_cepstra_source/checkpoints/run_1119_2300_alex",
+    "model_to_eval": "checkpoint_fold_0_epoch_486.pth.tar"
+}
