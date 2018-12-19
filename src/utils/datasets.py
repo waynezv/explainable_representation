@@ -123,3 +123,21 @@ class SpokenDigitsSpecCeps(Dataset):
         attr = self.files[i].split('_')  # e.g. "0_theo_7.npy"
         Y = int(attr[0])  # torch.LongTensor
         return spec, ceps, Y
+
+
+class FEMH(Dataset):
+    def __init__(self, file_list, root1='.', root2='.'):
+        self.root1 = root1
+        self.root2 = root2
+        self.files = file_list
+        self.num_files = len(self.files)
+
+    def __len__(self):
+        return self.num_files
+
+    def __getitem__(self, i):
+        f, Y = self.files[i].split()
+        f = os.path.splitext(f)[0] + '.npy'
+        X1 = np.load(os.path.join(self.root1, f)).astype('float32')
+        X2 = np.load(os.path.join(self.root2, f)).astype('float32')
+        return X1, X2, int(Y)

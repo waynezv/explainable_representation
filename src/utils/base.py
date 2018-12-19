@@ -56,7 +56,6 @@ def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     pspec = sigproc.powspec(frames,nfft)
     energy = numpy.sum(pspec,1) # this stores the total energy in each frame
     energy = numpy.where(energy == 0,numpy.finfo(float).eps,energy) # if energy is zero, we get problems with log
-
     fb = get_filterbanks(nfilt,nfft,samplerate,lowfreq,highfreq)
     feat = numpy.dot(pspec,fb.T) # compute the filterbank energies
     feat = numpy.where(feat == 0,numpy.finfo(float).eps,feat) # if feat is zero, we get problems with log
