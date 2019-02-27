@@ -11,7 +11,7 @@ pathol_folder1="$basename""/""$dirname1"
 pathol_folder2="$basename""/""$dirname2"
 pathol_folder3="$basename""/""$dirname3"
 
-list_file="FEMH_data.lst"
+list_file="FEMH_data_8k.lst"
 
 [[ ! -e $list_file ]] || rm $list_file
 touch $list_file
