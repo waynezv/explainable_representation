@@ -4,7 +4,7 @@ import os
 import sys
 import subprocess
 import numpy as np
-import scipy
+from scipy.signal import hilbert, correlate, fftconvolve
 from scipy.io import wavfile as siowav
 from scipy import integrate, interpolate
 from scipy import optimize
@@ -45,13 +45,13 @@ def envelope(x):
 
     Returns
     -------
-    xa: np.array[complex]
+    xa: np.array[complex], shape (N,)
         The analytic signal.
-    envelope: np.array[float]
+    envelope: np.array[float], shape (N,)
         The envelope.
     '''
-    # Analytic signal
-    xa = scipy.signal.hilbert(x)
+    x = x.astype('float')
+    xa = hilbert(x)  # analytic signal
     envelope = np.abs(xa)
     return xa, envelope
 
@@ -62,19 +62,14 @@ def cross_correlation(x, y):
 
     Parameters
     ----------
-    x: np.array[float], shape (N,)
-    y: np.array[float], shape (M,)
+    x: np.array, shape (N,)
+    y: np.array, shape (M,), N >= M
 
     Returns
     -------
-    Rxy: np.array[complex]
+    Rxy: np.array, shape (N,)
     '''
-    X = scipy.fft.fft(x)
-    Y = scipy.fft.fft(y)
-    X_ = np.conj(X)
-    R_ = X_ * Y
-    Rxy = scipy.fft.ifft(R_)
-    Rxy = scipy.signal.correlate(x, y)
+    Rxy = np.correlate(x, y, 'full')
     return Rxy
 
 
@@ -98,13 +93,12 @@ def estimate_pitch(params, t, pitch_true, fs):
     pitch: List[float]
         Estimated pitch.
     '''
-    # pdb.set_trace()
-    # print(params)
     r = integrate.odeint(vdp_coupled, y0, t,
                          args=tuple(params), Dfun=vdp_jacobian)
 
     flow = r[:, 0] + r[:, 2]
 
+    # Plot glottal area flow
     # fig = plt.figure(figsize=(6, 6))
     # ax1 = fig.add_subplot(211)
     # ax1.plot(flow[:10000], c='b', ls='-', lw=1.5)
@@ -132,9 +126,8 @@ def estimate_pitch(params, t, pitch_true, fs):
                      for j in indices]  # linear interpolate
         cycle_len = np.mean(np.diff(crossings))  # avg len per cycle
         p = fs / float(cycle_len)  # cycle/s
-        # p = p * 10  # TODO: decide time unit
+        p = p * 10  # TODO: decide time unit
         pitch.append(p)
-        # print(cycle_len, p)
 
     return pitch
 
@@ -143,7 +136,6 @@ def estimate_pitch(params, t, pitch_true, fs):
 def residual(params, y_true, tmax, tlen, fs):
     t = np.linspace(0, tmax, tlen)
     yh = estimate_pitch(params, t, y_true, fs)
-    # print(np.sum(np.abs(y_true - np.array(yh))))
     return y_true - np.array(yh)
 
 
@@ -152,7 +144,7 @@ def fit():
     betas = []
     deltas = []
 
-    wavfiles = [l.rstrip('\n').split()[0] for l in open(wav_list)][150:]
+    wavfiles = [l.rstrip('\n').split()[0] for l in open(wav_list)]
 
     FNULL = open(os.devnull, 'w')
 
@@ -162,6 +154,7 @@ def fit():
         assert sample_rate == 8000, "{}: incompatible sample rate"\
             " need 8000 but got {}".format(f, sample_rate)
 
+        # Plot signal
         # fig = plt.figure(figsize=(6, 6))
         # ax1 = fig.add_subplot(111)
         # ax1.plot(samples, c='b', ls='-', lw=2)
@@ -170,6 +163,54 @@ def fit():
         # ax1.axis('auto')
         # plt.tight_layout()
         # plt.savefig('signal_{}.pdf'.format(f.replace('/', '_').rstrip('.wav')))
+
+        # Plot peak of envelope correlation
+        # plt.figure()
+        # plt.subplot(511)
+        # plt.plot(range(len(samples)), samples, 'b--')
+        # plt.title('signal')
+        # sig_seg = framesig(samples, sample_rate * 0.01, sample_rate * 0.01)
+        # peaks = []  # peaks of envelope correlation
+        # for seg in sig_seg:
+            # _, env = envelope(seg)
+            # Rxy = cross_correlation(env[:len(seg)//2], env[len(seg)//2:])
+            # peaks.append(np.max(Rxy))
+        # plt.subplot(512)
+        # tk = np.linspace(0, len(samples), len(peaks))
+        # plt.plot(tk, peaks, 'k-')
+        # plt.title('peaks of envelope correlation (0.01s segment)')
+        # sig_seg = framesig(samples, sample_rate * 0.02, sample_rate * 0.02)
+        # peaks = []  # peaks of envelope correlation
+        # for seg in sig_seg:
+            # _, env = envelope(seg)
+            # Rxy = cross_correlation(env[:len(seg)//2], env[len(seg)//2:])
+            # peaks.append(np.max(Rxy))
+        # plt.subplot(513)
+        # tk = np.linspace(0, len(samples), len(peaks))
+        # plt.plot(tk, peaks, 'k-')
+        # plt.title('peaks of envelope correlation (0.02s segment)')
+        # sig_seg = framesig(samples, sample_rate * 0.03, sample_rate * 0.03)
+        # peaks = []  # peaks of envelope correlation
+        # for seg in sig_seg:
+            # _, env = envelope(seg)
+            # Rxy = cross_correlation(env[:len(seg)//2], env[len(seg)//2:])
+            # peaks.append(np.max(Rxy))
+        # plt.subplot(514)
+        # tk = np.linspace(0, len(samples), len(peaks))
+        # plt.plot(tk, peaks, 'k-')
+        # plt.title('peaks of envelope correlation (0.03s segment)')
+        # sig_seg = framesig(samples, sample_rate * 0.04, sample_rate * 0.04)
+        # peaks = []  # peaks of envelope correlation
+        # for seg in sig_seg:
+            # _, env = envelope(seg)
+            # Rxy = cross_correlation(env[:len(seg)//2], env[len(seg)//2:])
+            # peaks.append(np.max(Rxy))
+        # plt.subplot(515)
+        # tk = np.linspace(0, len(samples), len(peaks))
+        # plt.plot(tk, peaks, 'k-')
+        # plt.title('peaks of envelope correlation (0.04s segment)')
+        # plt.tight_layout()
+        # plt.savefig('envelope_correlation_{}.pdf'.format(f.replace('/', '_').rstrip('.wav')))
 
         # Extract pitch
         subprocess.run(["./histopitch -in {} -out tmp.pit -srate {}".
@@ -192,6 +233,7 @@ def fit():
         print(f)
         print("parameter values are ", params_best)
 
+        # Plot pitch
         #  t = np.linspace(0, tmax, tlen)
         #  pitch_est = estimate_pitch(params_best, t, pitch, sample_rate)
         #  fig = plt.figure(figsize=(12, 6))
@@ -210,6 +252,7 @@ def fit():
         #  plt.tight_layout()
         #  plt.savefig('pitch_{}.pdf'.format(f.replace('/', '_').rstrip('.wav')))
 
+    # Plot bifurcation
     # fig = plt.figure(figsize=(6, 6))
     # ax1 = fig.add_subplot(111)
     # ax1.scatter(np.abs(deltas), alphas, s=2, c='b', marker='.')
@@ -224,32 +267,3 @@ def fit():
 
 
 fit()
-
-
-#  r = ode(vdp_coupled, vdp_jacobian)
-#  r.set_integrator('lsoda',
-                 #  with_jacobian=True,
-                 #  ixpr=1)
-#  r.set_f_params(0.8, 0.32, 1)
-#  r.set_jac_params(0.8, 0.32, 1)
-
-#  r.set_initial_value(y0, t0)
-
-#  while r.successful() and r.t < tmax:
-    #  r.integrate(r.t + dt)
-    #  sol.append([r.t, *list(r.y)])
-
-#  sol = np.array(sol)  # dim: t, xr, dxr, xl, dxl
-
-#  plt.figure()
-#  plt.plot(sol[:1000, 0], sol[:1000, 1], 'b.-')
-#  plt.plot(sol[:1000, 0], sol[:1000, 3], 'r.-')
-#  plt.xlabel('t')
-#  plt.ylabel('x')
-#  plt.show()
-
-#  plt.figure()
-#  plt.plot(sol[:, 2], sol[:, 4], 'b.-')
-#  plt.xlabel('du')
-#  plt.ylabel('dv')
-#  plt.show()
